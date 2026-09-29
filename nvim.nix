@@ -3,6 +3,9 @@
 {
   inherit neovim;
 
+  aliases = [ "vim" ];
+  desktopEntry = false;
+
   extraBinPath = with pkgs; [
     chafa
     dhall-lsp-server

@@ -66,6 +66,7 @@ let
   treesitterGrammars = t: t.withPlugins (p: [
     p.tree-sitter-scala
     p.tree-sitter-nix
+    p.tree-sitter-lua
     p.tree-sitter-elm
     p.tree-sitter-haskell
     p.tree-sitter-markdown
