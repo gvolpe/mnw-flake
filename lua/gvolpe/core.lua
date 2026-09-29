@@ -23,7 +23,7 @@ vim.opt.visualbell = false
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.clipboard:append("unnamedplus")
-
+vim.opt.list = true
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 vim.g.cursorline_timeout = 0

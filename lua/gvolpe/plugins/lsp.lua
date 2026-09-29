@@ -50,6 +50,13 @@ end
 
 -- Enable lspconfig
 local capabilities = vim.lsp.protocol.make_client_capabilities()
+require('cmp_nvim_lsp').default_capabilities(capabilities);
+
+-- for the ufo (folding) plugin
+capabilities.textDocument.foldingRange = {
+  dynamicRegistration = false,
+  lineFoldingOnly = true
+}
 
 -- Restore the old LspInfo command functionality
 vim.api.nvim_create_user_command("LspInfo", "checkhealth vim.lsp", { desc = "Native LSP info replacement" })

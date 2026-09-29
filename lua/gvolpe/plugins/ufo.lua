@@ -1,8 +1,3 @@
-capabilities.textDocument.foldingRange = {
-  dynamicRegistration = false,
-  lineFoldingOnly = true
-}
-
 -- Display number of folded lines
 local ufo_handler = function(virtText, lnum, endLnum, width, truncate)
   local newVirtText = {}
