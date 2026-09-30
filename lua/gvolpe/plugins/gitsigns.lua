@@ -22,29 +22,18 @@ require('gitsigns').setup {
     end
 
     -- Actions
-    require("which-key").register({
-      ["<leader>g"] = {
-        name = "Gitsigns",
-        b = { function() gs.blame_line{full=true} end, "Blame (full)" },
-        tb = { gs.toggle_current_line_blame, "Toggle blame" },
-        td = { gs.toggle_deleted, "Toggle deleted" },
-        d = { gs.diffthis, "Diff current file" },
-        D = { function() gs.diffthis('~') end, "Diff file" },
-        h = {
-          name = "Hunks",
-          n = { nextHunk, "Next hunk" },
-          p = { prevHunk, "Previous hunk" },
-          r = { gs.reset_hunk, "Reset hunk" },
-          s = { gs.stage_hunk, "Stage hunk" },
-          u = { gs.undo_stage_hunk, "Undo stage hunk" },
-        },
-        w = {
-          name = "Write",
-        },
-        S = { gs.stage_buffer, "Stage buffer" },
-        R = { gs.reset_buffer, "Reset buffer" },
-      },
-    })
+    map("n", "<leader>gb", function() gs.blame_line{full=true} end, { desc = "Blame (full)" })
+    map("n", "<leader>gtb", gs.toggle_current_line_blame, { desc = "Toggle blame" })
+    map("n", "<leader>gtd", gs.toggle_deleted, { desc = "Toggle deleted" })
+    map("n", "<leader>gd", gs.diffthis, { desc = "Diff current file" })
+    map("n", "<leader>gD", function() gs.diffthis('~') end, { desc = "Diff file" })
+    map("n", "<leader>ghn", nextHunk, { desc = "Next hunk" })
+    map("n", "<leader>ghp", prevHunk, { desc = "Previous hunk" })
+    map("n", "<leader>ghr", gs.reset_hunk, { desc = "Reset hunk" })
+    map("n", "<leader>ghs", gs.stage_hunk, { desc = "Stage hunk" })
+    map("n", "<leader>ghu", gs.undo_stage_hunk, { desc = "Undo stage hunk" })
+    map("n", "<leader>gS", gs.stage_buffer, { desc = "Stage buffer" })
+    map("n", "<leader>gR", gs.reset_buffer, { desc = "Reset buffer" })
 
     -- Text object
     map({'o', 'x'}, 'ih', '<cmd><C-U>Gitsigns select_hunk<CR>')
