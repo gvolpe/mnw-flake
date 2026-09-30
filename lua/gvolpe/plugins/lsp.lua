@@ -1,194 +1,236 @@
-local attach_keymaps = function(client, bufnr)
-  local opts = { noremap=true, silent=true }
+local lsp_group = vim.api.nvim_create_augroup("gvolpe_lsp", { clear = true })
+local format_group = vim.api.nvim_create_augroup("gvolpe_lsp_format", { clear = true })
 
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>lgD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>lgd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>lgi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>lgr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>lgt', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>lgn', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>lgp', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
+vim.g.formatsave = false
 
-  -- Alternative keybinding for code actions for when code-action-menu does not work as expected.
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>lca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
-
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>lwa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>lwr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>lwl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
-
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>lh', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>lsh', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>ln', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', 'F', '<cmd>lua vim.lsp.buf.format { async = true }<CR>', opts)
-
-  -- Metals specific
-vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>lmc', '<cmd>lua require("metals").commands()<CR>', opts)
-vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>lmi', '<cmd>lua require("metals").toggle_setting("showImplicitArguments")<CR>', opts)
-
-end
-
-vim.g.formatsave = false;
-
--- Enable formatting
-format_callback = function(client, bufnr)
-  vim.api.nvim_create_autocmd("BufWritePre", {
-    group = augroup,
+local function map(bufnr, lhs, rhs, desc)
+  vim.keymap.set("n", lhs, rhs, {
     buffer = bufnr,
-    callback = function()
-      if vim.g.formatsave then
-          local params = require'vim.lsp.util'.make_formatting_params({})
-          client.request('textDocument/formatting', params, nil, bufnr)
-      end
-    end
+    desc = desc,
+    noremap = true,
+    silent = true,
   })
 end
 
-default_on_attach = function(client, bufnr)
-  attach_keymaps(client, bufnr)
-  format_callback(client, bufnr)
+local function attach_keymaps(client, bufnr)
+  if not vim.b[bufnr].gvolpe_lsp_keymaps then
+    map(bufnr, "<leader>lgD", vim.lsp.buf.declaration, "LSP declaration")
+    map(bufnr, "<leader>lgd", vim.lsp.buf.definition, "LSP definition")
+    map(bufnr, "<leader>lgi", vim.lsp.buf.implementation, "LSP implementation")
+    map(bufnr, "<leader>lgr", vim.lsp.buf.references, "LSP references")
+    map(bufnr, "<leader>lgt", vim.lsp.buf.type_definition, "LSP type definition")
+    map(bufnr, "<leader>lgn", function()
+      vim.diagnostic.jump({ count = 1, float = true })
+    end, "Next diagnostic")
+    map(bufnr, "<leader>lgp", function()
+      vim.diagnostic.jump({ count = -1, float = true })
+    end, "Previous diagnostic")
+
+    -- Alternative keybinding for code actions for when code-action-menu does not work as expected.
+    map(bufnr, "<leader>lca", vim.lsp.buf.code_action, "LSP code action")
+
+    map(bufnr, "<leader>lwa", vim.lsp.buf.add_workspace_folder, "Add workspace folder")
+    map(bufnr, "<leader>lwr", vim.lsp.buf.remove_workspace_folder, "Remove workspace folder")
+    map(bufnr, "<leader>lwl", function()
+      print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+    end, "List workspace folders")
+
+    map(bufnr, "<leader>lh", vim.lsp.buf.hover, "LSP hover")
+    map(bufnr, "<leader>lsh", vim.lsp.buf.signature_help, "LSP signature help")
+    map(bufnr, "<leader>ln", vim.lsp.buf.rename, "LSP rename")
+    map(bufnr, "F", function()
+      vim.lsp.buf.format({ async = true, bufnr = bufnr })
+    end, "LSP format")
+
+    vim.b[bufnr].gvolpe_lsp_keymaps = true
+  end
+
+  if client.name == "metals" and not vim.b[bufnr].gvolpe_metals_keymaps then
+    map(bufnr, "<leader>lmc", function()
+      require("metals").commands()
+    end, "Metals commands")
+    map(bufnr, "<leader>lmi", function()
+      require("metals").toggle_setting("showImplicitArguments")
+    end, "Toggle Metals implicit arguments")
+
+    vim.b[bufnr].gvolpe_metals_keymaps = true
+  end
 end
 
--- Enable lspconfig
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-require('cmp_nvim_lsp').default_capabilities(capabilities);
+local function enable_format_on_save(client, bufnr)
+  if vim.b[bufnr].gvolpe_lsp_format_on_save or not client:supports_method("textDocument/formatting") then
+    return
+  end
+
+  vim.b[bufnr].gvolpe_lsp_format_on_save = true
+
+  vim.api.nvim_create_autocmd("BufWritePre", {
+    group = format_group,
+    buffer = bufnr,
+    callback = function(event)
+      if vim.g.formatsave then
+        vim.lsp.buf.format({ async = false, bufnr = event.buf, timeout_ms = 1000 })
+      end
+    end,
+  })
+end
+
+vim.api.nvim_create_autocmd("LspAttach", {
+  group = lsp_group,
+  callback = function(event)
+    local client = vim.lsp.get_client_by_id(event.data.client_id)
+    if not client then
+      return
+    end
+
+    attach_keymaps(client, event.buf)
+    enable_format_on_save(client, event.buf)
+  end,
+})
+
+local capabilities = vim.tbl_deep_extend(
+  "force",
+  vim.lsp.protocol.make_client_capabilities(),
+  require("cmp_nvim_lsp").default_capabilities()
+)
 
 -- for the ufo (folding) plugin
 capabilities.textDocument.foldingRange = {
   dynamicRegistration = false,
-  lineFoldingOnly = true
+  lineFoldingOnly = true,
 }
+
+local function configure(server, config)
+  config = config or {}
+  config.capabilities = vim.tbl_deep_extend("force", capabilities, config.capabilities or {})
+
+  vim.lsp.config(server, config)
+  vim.lsp.enable(server)
+end
 
 -- Restore the old LspInfo command functionality
 vim.api.nvim_create_user_command("LspInfo", "checkhealth vim.lsp", { desc = "Native LSP info replacement" })
 
 -- Nix config
-vim.lsp.config['nil_ls'] = {
-  capabilities = capabilities;
-  on_attach = function(client, bufnr)
-    attach_keymaps(client, bufnr)
-  end,
+configure("nil_ls", {
   settings = {
-    ['nil'] = {
+    ["nil"] = {
       formatting = {
-        command = {"nixpkgs-fmt"}
+        command = { "nixpkgs-fmt" },
       },
       diagnostics = {
         ignored = { "uri_literal" },
-        excludedFiles = { }
+        excludedFiles = {},
       },
       nix = {
         flake = {
           autoArchive = false,
           autoEvalInputs = false,
-          nixpkgsInputName = "nixpkgs"
-        }
-      }
-    }
-  };
-  cmd = {"nil"}
-}
-vim.lsp.enable('nil_ls')
+          nixpkgsInputName = "nixpkgs",
+        },
+      },
+    },
+  },
+  cmd = { "nil" },
+})
 
 -- Dhall config
-vim.lsp.config['dhall_lsp_server'] = {
-  capabilities = capabilities;
-  on_attach = default_on_attach;
-  cmd = { "dhall-lsp-server" };
-}
-vim.lsp.enable('dhall_lsp_server')
+configure("dhall_lsp_server", {
+  cmd = { "dhall-lsp-server" },
+})
 
 -- Elm config
-vim.lsp.config['elmls'] = {
-  capabilities = capabilities;
-  on_attach = default_on_attach;
+configure("elmls", {
   init_options = {
-     elmPath = "elm",
-     elmFormatPath = "elm-format",
-     elmTestPath = "elm-test",
-     elmAnalyseTrigger = "change"
-  };
-  cmd = { "elm-language-server" };
-  root_markers = { "elm.json" };
-}
-vim.lsp.enable('elmls')
+    elmPath = "elm",
+    elmFormatPath = "elm-format",
+    elmTestPath = "elm-test",
+    elmAnalyseTrigger = "change",
+  },
+  cmd = { "elm-language-server" },
+  root_markers = { "elm.json" },
+})
 
 -- Unison config
-vim.lsp.config['unison'] = {
-  capabilities = capabilities;
-  on_attach = default_on_attach;
-  cmd = { "nc", "localhost", "5757" };
-  filetypes = { "unison" };
-  root_markers = { "*.u" };
-}
-vim.lsp.enable('unison')
+configure("unison", {
+  cmd = { "nc", "localhost", "5757" },
+  filetypes = { "unison" },
+  root_markers = { "*.u" },
+})
 
 -- Scala nvim-metals config
-metals_config = require('metals').bare_config()
+local metals_config = require("metals").bare_config()
 metals_config.capabilities = capabilities
-metals_config.on_attach = default_on_attach
 
 metals_config.settings = {
-   metalsBinaryPath = "metals",
-   autoImportBuild = "off",
-   defaultBspToBuildTool = true,
-   showImplicitArguments = true,
-   showImplicitConversionsAndClasses = true,
-   showInferredType = true,
-   superMethodLensesEnabled = true,
-   excludedPackages = {
-     "akka.actor.typed.javadsl",
-     "com.github.swagger.akka.javadsl"
-   },
-   serverProperties = {
-     "-Dmetals.enable-best-effort=true","-Xmx2G","-XX:+UseZGC","-XX:ZUncommitDelay=30","-XX:ZCollectionInterval=5","-XX:+IgnoreUnrecognizedVMOptions"
-   }
+  metalsBinaryPath = "metals",
+  autoImportBuild = "off",
+  defaultBspToBuildTool = true,
+  showImplicitArguments = true,
+  showImplicitConversionsAndClasses = true,
+  showInferredType = true,
+  superMethodLensesEnabled = true,
+  excludedPackages = {
+    "akka.actor.typed.javadsl",
+    "com.github.swagger.akka.javadsl",
+  },
+  serverProperties = {
+    "-Dmetals.enable-best-effort=true",
+    "-Xmx2G",
+    "-XX:+UseZGC",
+    "-XX:ZUncommitDelay=30",
+    "-XX:ZCollectionInterval=5",
+    "-XX:+IgnoreUnrecognizedVMOptions",
+  },
 }
 
 -- without doing this, autocommands that deal with filetypes prohibit messages from being shown
 vim.opt_global.shortmess:remove("F")
 
-vim.cmd([[augroup lsp]])
-vim.cmd([[autocmd!]])
-vim.cmd([[autocmd FileType java,scala,sbt lua require('metals').initialize_or_attach(metals_config)]])
-vim.cmd([[augroup end]])
+vim.api.nvim_create_autocmd("FileType", {
+  group = lsp_group,
+  pattern = { "java", "scala", "sbt" },
+  callback = function()
+    require("metals").initialize_or_attach(metals_config)
+  end,
+})
 
 -- TS config
-vim.lsp.config['ts_ls'] = {
-  capabilities = capabilities;
-  on_attach = function(client, bufnr)
-    attach_keymaps(client, bufnr)
-  end,
-  cmd = { "typescript-language-server", "--stdio" }
-}
-vim.lsp.enable('ts_ls')
+configure("ts_ls", {
+  cmd = { "typescript-language-server", "--stdio" },
+})
 
 -- Lua config
-vim.lsp.config('lua_ls', {
+configure("lua_ls", {
   on_init = function(client)
     if client.workspace_folders then
       local path = client.workspace_folders[1].name
       if
-        path ~= vim.fn.stdpath('config')
-        and (vim.uv.fs_stat(path .. '/.luarc.json') or vim.uv.fs_stat(path .. '/.luarc.jsonc'))
+        path ~= vim.fn.stdpath("config")
+        and (vim.uv.fs_stat(path .. "/.luarc.json") or vim.uv.fs_stat(path .. "/.luarc.jsonc"))
       then
         return
       end
     end
 
-    client.config.settings.Lua = vim.tbl_deep_extend('force', client.config.settings.Lua, {
+    local library = { vim.env.VIMRUNTIME }
+    local lspconfig_library = vim.api.nvim_get_runtime_file("lua/lspconfig", false)[1]
+    if lspconfig_library then
+      table.insert(library, lspconfig_library)
+    end
+
+    client.config.settings = client.config.settings or {}
+    client.config.settings.Lua = vim.tbl_deep_extend("force", client.config.settings.Lua or {}, {
       runtime = {
-        version = 'LuaJIT',
+        version = "LuaJIT",
         path = {
-          'lua/?.lua',
-          'lua/?/init.lua',
+          "lua/?.lua",
+          "lua/?/init.lua",
         },
       },
       workspace = {
         checkThirdParty = false,
-        library = {
-          vim.env.VIMRUNTIME,
-          vim.api.nvim_get_runtime_file("lua/lspconfig", false)[1],
-        },
+        library = library,
       },
     })
   end,
@@ -196,13 +238,12 @@ vim.lsp.config('lua_ls', {
   settings = {
     Lua = {
       codeLens = {
-        enable = true
+        enable = true,
       },
       hint = {
         enable = true,
-        semicolon = "Disable"
-      }
+        semicolon = "Disable",
+      },
     },
   },
 })
-vim.lsp.enable('lua_ls')
