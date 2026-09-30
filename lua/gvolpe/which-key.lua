@@ -1,5 +1,26 @@
 local wk = require("which-key")
 
+local ignored_overlap_prefixes = {
+  n = {
+    gc = true,
+    ys = true,
+    yS = true,
+  },
+  o = {
+    a = true,
+    i = true,
+  },
+  x = {
+    a = true,
+    i = true,
+  },
+}
+
+local function ignored_overlap(mapping)
+  local ignored = ignored_overlap_prefixes[mapping.mode]
+  return ignored ~= nil and ignored[mapping.lhs] == true
+end
+
 wk.add({
   { "<leader>a", group = "Code actions" },
   { "<leader>b", group = "Buffers" },
@@ -16,4 +37,11 @@ wk.add({
   { "<leader>t", group = "Tree & Todo" },
 })
 
-wk.setup {}
+wk.setup {
+  disable = {
+    ft = { "NvimTree" },
+  },
+  filter = function(mapping)
+    return not ignored_overlap(mapping)
+  end,
+}
