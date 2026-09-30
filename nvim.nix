@@ -33,6 +33,7 @@
     };
 
     start = with (pkgs.vimPlugins); [
+      # plugin manager
       lazy-nvim
 
       # lsp
@@ -45,6 +46,7 @@
       # treesitter
       nvim-treesitter
       nvim-treesitter-context
+      nvim-ts-autotag # autoclose and autorename html tags
 
       # completion
       cmp-nvim-lsp
@@ -54,57 +56,87 @@
       cmp-treesitter
       nvim-cmp
 
-      # others
-      vim-fugitive
+      # core functionality
+      nvim-surround
       vim-multiple-cursors
       vim-repeat
+
+      # mini.ai (text objects)
+      mini-nvim
+
+      # better messages, cmdline, popupmenu
       noice-nvim
+
+      # git support
+      vim-fugitive
+      gitsigns-nvim
+
+      # dependencies
       nui-nvim
       nvim-web-devicons
-      nvim-cursorline
-      indent-blankline-nvim
-      nvim-ts-autotag
-      onedark-nvim
-      bufferline-nvim
-      bufdelete-nvim
-      lualine-nvim
-      nvim-lightbulb
+      plenary-nvim
       promise-async
-      nvim-ufo
-      which-key-nvim
-      gitsigns-nvim
-      nvim-tree-lua
-      nvim-autopairs
+
+      # dimming mode (treesitter and zen mode)
       twilight-nvim
-      nui-nvim
+
+      # fuzzy search
       telescope-nvim
       telescope-media-files-nvim
-      nvim-surround
-      vim-vsnip
+
+      # notifications
       nvim-notify
-      nvim-neoclip-lua
-      mini-nvim
-      dial-nvim
+
+      # code comments
       nerdcommenter
-      plenary-nvim
+
+      # themes
+      onedark-nvim
+
+      # visual
+      bufferline-nvim
+      bufdelete-nvim
+      indent-blankline-nvim
+      lualine-nvim
+      nvim-cursorline
+      nvim-lightbulb
+      nvim-ufo
+
+      # enhanced increment/decrement plugin
+      dial-nvim
+
+      # keybindings helper
+      which-key-nvim
+
+      # tree view
+      nvim-tree-lua
+
+      # autopair plugin with multiple characters support
+      nvim-autopairs
+
+      # clipboard manager with telescope support
+      nvim-neoclip-lua
+
+      # code snippets
+      vim-vsnip
     ] ++ (with pkgs.neovimPlugins; [
-      modes-nvim
-      telescope-tabs
-      tide
+      modes-nvim # prismatic line decorations
+      telescope-tabs # search.nvim (tabs for telescope)
+      tide # harpoon alternative
     ]);
 
     opt = with (pkgs.vimPlugins); [
-      cellular-automaton-nvim
-      diffview-nvim
-      glow-nvim
-      hurl-nvim
-      jujutsu-nvim
-      neogit
-      nvim-code-action-menu
-      render-markdown-nvim
-      todo-comments-nvim
-      trouble-nvim
-      zen-mode-nvim
+      cellular-automaton-nvim # treesitter animation
+      diffview-nvim # jujutsu dependency for diffs
+      glow-nvim # markdown
+      hurl-nvim # hurl regression tests
+      jujutsu-nvim # jujutsu vcs
+      neogit # git plugin
+      nvim-code-action-menu # lsp code actions
+      render-markdown-nvim # markdown
+      todo-comments-nvim # todo list
+      trouble-nvim # lsp diagnostics
+      zen-mode-nvim # zen mode with twilight-nvim
     ];
   };
 }

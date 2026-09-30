@@ -8,11 +8,11 @@ require "gvolpe.which-key"
 require("lspkind").init()
 require("lsp_signature").setup()
 require("mini.ai").setup()
-require("mini.surround").setup()
 require("nvim-autopairs").setup{}
 require("nvim-lightbulb").setup()
 require("nvim-surround").setup()
 
+-- notifications
 require("notify").setup({
   background_colour = "#000000",
 })

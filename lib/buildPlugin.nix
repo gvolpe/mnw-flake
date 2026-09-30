@@ -35,11 +35,6 @@ let
     cp ${ts.builtGrammars.tree-sitter-smithy}/parser $out/parser/smithy.so
   '';
 
-  plenaryPostPatchHook = ''
-    sed -Ei lua/plenary/curl.lua \
-        -e 's@(command\s*=\s*")curl(")@\1${pkgs.curl}/bin/curl\2@'
-  '';
-
   # following https://github.com/NixOS/nixpkgs/blob/d86ae899d2909c0899e4d3b29d90d5309771e77c/pkgs/applications/editors/vim/plugins/overrides.nix#L139
   buildPlug = name: grammars:
     let overrides = (final.callPackage ./plugins/overrides.nix { }) { p = name; };
@@ -47,18 +42,14 @@ let
       inherit name;
       inherit (overrides) checkInputs dependencies nvimRequireCheck nvimSkipModule;
 
-      version = "master";
+      version = "main";
       src = lib.getAttr name inputs;
 
-      doInstallCheck = name == "diffview" || name == "plenary-nvim";
-      dontBuild = name == "nvim-metals";
+      doInstallCheck = false;
 
       preFixup = ''
         ${writeIf (name == "nvim-treesitter") tsPreFixupHook}
         ${writeIf (name == "telescope-media-files") telescopeFixupHook}
-      '';
-      postPatch = ''
-        ${writeIf (name == "plenary-nvim") plenaryPostPatchHook}
       '';
     };
 
