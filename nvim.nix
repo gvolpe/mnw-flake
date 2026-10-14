@@ -44,7 +44,7 @@
       unison
 
       # treesitter
-      nvim-treesitter
+      pkgs.nvim-treesitter-patched
       nvim-treesitter-context
       nvim-ts-autotag # autoclose and autorename html tags
 
