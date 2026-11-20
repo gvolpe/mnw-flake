@@ -14,7 +14,7 @@
     elmPackages.elm-language-server
     fd
     glow
-    luaPackages.lua-lsp
+    lua52Packages.lua-lsp
     metals
     nil
     nixpkgs-fmt
